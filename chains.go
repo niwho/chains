@@ -2,7 +2,6 @@ package chains
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"sync"
 )
@@ -86,7 +85,6 @@ func (c *ChainRequest) Next() {
 	c.index++
 	s := int8(len(c.cacheChains))
 	for ; c.index < s; c.index++ {
-		fmt.Println("index~~~~~~", c.index)
 		c.cacheChains[c.index](c)
 	}
 }

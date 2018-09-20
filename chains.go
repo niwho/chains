@@ -6,6 +6,13 @@ import (
 	"sync"
 )
 
+const (
+	MODE = "MODE"
+	GET  = "GET"
+	SET  = "SET"
+	DEL  = "DEL"
+)
+
 type ChainManager struct {
 	sync.Pool
 	cacheChains GetDataChain
@@ -25,6 +32,38 @@ func (cm *ChainManager) GetData(ctx context.Context, key interface{}) interface{
 	c := cm.Get().(*ChainRequest)
 	c.reset()
 	c.ctx = ctx
+	c.ctx = context.WithValue(ctx, MODE, GET)
+	c.key = key
+	c.cacheChains = cm.cacheChains
+
+	c.Next()
+
+	dat, _ := c.GetData()
+	cm.Put(c)
+
+	return dat
+}
+
+func (cm *ChainManager) SetData(ctx context.Context, key, val interface{}) interface{} {
+	c := cm.Get().(*ChainRequest)
+	c.reset()
+	c.ctx = context.WithValue(ctx, MODE, SET)
+	c.SetData(val)
+	c.key = key
+	c.cacheChains = cm.cacheChains
+
+	c.Next()
+
+	dat, _ := c.GetData()
+	cm.Put(c)
+
+	return dat
+}
+
+func (cm *ChainManager) DelData(ctx context.Context, key interface{}) interface{} {
+	c := cm.Get().(*ChainRequest)
+	c.reset()
+	c.ctx = context.WithValue(ctx, MODE, DEL)
 	c.key = key
 	c.cacheChains = cm.cacheChains
 

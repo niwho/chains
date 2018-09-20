@@ -102,6 +102,11 @@ func (DA) Set(key string, val interface{}) {
 	fmt.Println("da set:", key, val)
 }
 
+func (DA) Del(key string) {
+	//do som worker
+	fmt.Println("da del:", key)
+}
+
 type DB struct{}
 
 func (DB) Get(key string) (interface{}, bool) {
@@ -111,8 +116,12 @@ func (DB) Get(key string) (interface{}, bool) {
 
 func (DB) Set(key string, val interface{}) {
 	//do som worker
-
 	fmt.Println("dB set:", key, val)
+}
+
+func (DB) Del(key string) {
+	//do som worker
+	fmt.Println("dB del:", key)
 }
 
 type DC struct{}
@@ -124,8 +133,11 @@ func (DC) Get(key string) (interface{}, bool) {
 
 func (DC) Set(key string, val interface{}) {
 	//do som worker
-
 	fmt.Println("dC set:", key, val)
+}
+func (DC) Del(key string) {
+	//do som worker
+	fmt.Println("dC Del:", key)
 }
 
 func TestDataLoaderManager(t *testing.T) {
@@ -135,4 +147,10 @@ func TestDataLoaderManager(t *testing.T) {
 	dlm.Use(DC{})
 	val := dlm.Get("test_key")
 	fmt.Println("TestDataLoaderManager", val)
+
+	fmt.Println("#####set#####")
+	dlm.Set("test_key", "1")
+
+	fmt.Println("#####del#####")
+	dlm.Del("test_key")
 }

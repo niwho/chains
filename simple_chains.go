@@ -9,6 +9,7 @@ import (
 type DataLoader interface {
 	Get(key string) (interface{}, bool)
 	Set(key string, val interface{})
+	Del(key string)
 }
 
 type DataLoaderManager struct {
@@ -30,16 +31,24 @@ func (dlm *DataLoaderManager) wrapper(dl DataLoader) ChainMethod {
 			c.Abort()
 			return
 		}
-		if data, ok := dl.Get(keystr); ok {
-			c.SetData(data)
-			// 结束串行调用
-			c.Abort()
-			return
+		mode := c.ctx.Value(MODE).(string)
+		if mode == GET {
+			if data, ok := dl.Get(keystr); ok {
+				c.SetData(data)
+				// 结束串行调用
+				c.Abort()
+				return
+			}
 		}
 		// 触发下一级调用
 		c.Next()
-		if dat, ok := c.GetData(); ok {
-			dl.Set(keystr, dat)
+		switch mode {
+		case GET, SET:
+			if dat, ok := c.GetData(); ok {
+				dl.Set(keystr, dat)
+			}
+		case DEL:
+			dl.Del(keystr)
 		}
 	}
 }
@@ -51,4 +60,12 @@ func (dlm *DataLoaderManager) Use(dl DataLoader) *DataLoaderManager {
 
 func (dlm *DataLoaderManager) Get(key string) interface{} {
 	return dlm.GetData(context.Background(), key)
+}
+
+func (dlm *DataLoaderManager) Set(key string, val interface{}) {
+	dlm.SetData(context.Background(), key, val)
+}
+
+func (dlm *DataLoaderManager) Del(key string) {
+	dlm.DelData(context.Background(), key)
 }
